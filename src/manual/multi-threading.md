@@ -1,41 +1,37 @@
 # [Multi-Threading](@id man-multithreading)
 
-Visit this [blog post](https://julialang.org/blog/2019/07/multithreading/) for a presentation
-of Julia multi-threading features.
+Julia 멀티 스레딩 기능에 대한 프레젠테이션을 보려면 이 [블로그 게시물](https://julialang.org/blog/2019/07/multithreading/)을 방문하시오.
 
-## Starting Julia with multiple threads
+## 여러 스레드로 Julia 를 시작하기
 
-By default, Julia starts up with a single thread of execution. This can be verified by using the
-command [`Threads.nthreads()`](@ref):
+기본적으로 줄리아는 단일 실행 스레드로 시작된다. [`Threads.nthreads()`](@ref) 명령을 사용하여 이를 확인할 수 있다: 
 
 ```julia-repl
 julia> Threads.nthreads()
 1
 ```
 
-The number of execution threads is controlled either by using the
-`-t`/`--threads` command line argument or by using the
-[`JULIA_NUM_THREADS`](@ref JULIA_NUM_THREADS) environment variable. When both are
-specified, then `-t`/`--threads` takes precedence.
+실행 스레드 수는 `-t`/`--threads` 명령행 인자를 사용하거나 [`JULIA_NUM_THREADS`](@ref JULIA_NUM_THREADS) 환경변수를 사용하여 제어한다.
+둘 다 지정되면 `-t`/`--threads`가 우선한다.
 
 !!! compat "Julia 1.5"
-    The `-t`/`--threads` command line argument requires at least Julia 1.5.
-    In older versions you must use the environment variable instead.
+    `-t`/`--threads` 명령행 인자는 최소한 Julia 1.5를 필요로 한다.
+    이전 버전에서는 환경변수를 사용해야 한다.
 
-Lets start Julia with 4 threads:
+4개의 스레드로 Julia를 시작하자:
 
 ```bash
 $ julia --threads 4
 ```
 
-Let's verify there are 4 threads at our disposal.
+사용할 수 있는 스레드가 4개임을 확인해보자.
 
 ```julia-repl
 julia> Threads.nthreads()
 4
 ```
 
-But we are currently on the master thread. To check, we use the function [`Threads.threadid`](@ref)
+하지만 우리는 현재 마스터 스레드에 있다. [`Threads.threadid`](@ref) 함수를 사용하여 확인한다.
 
 ```julia-repl
 julia> Threads.threadid()
@@ -43,33 +39,33 @@ julia> Threads.threadid()
 ```
 
 !!! note
-    If you prefer to use the environment variable you can set it as follows in
+    환경변수를 사용하기를 선호한다면, 다음과 같이 설정할 수 있다.
     Bash (Linux/macOS):
     ```bash
     export JULIA_NUM_THREADS=4
     ```
-    C shell on Linux/macOS, CMD on Windows:
+    C shell (Linux/macOS), CMD (Windows):
     ```bash
     set JULIA_NUM_THREADS=4
     ```
-    Powershell on Windows:
+    Powershell (Windows):
     ```powershell
     $env:JULIA_NUM_THREADS=4
     ```
-    Note that this must be done *before* starting Julia.
+    Julia를 시작하기 *이전에* 환경변수를 설정해야 한다.
 
 !!! note
-    The number of threads specified with `-t`/`--threads` is propagated to worker processes
-    that are spawned using the `-p`/`--procs` or `--machine-file` command line options.
-    For example, `julia -p2 -t2` spawns 1 main process with 2 worker processes, and all
-    three processes have 2 threads enabled. For more fine grained control over worker
-    threads use [`addprocs`](@ref) and pass `-t`/`--threads` as `exeflags`.
+    `-t`/`--threads`로 지정된 스레드 수는 `-p`/`--procs` 또는 `--machine-file` 명령행 옵션을 사용하여 생성된 작업자 프로세스로 전파된다.
+    예를 들어, `julia -p2 -t2` 는 1개의 메인 프로세스와 2개의 작업자 프로세스를 스폰하고, 세 프로세스 모두 2개의 스레드가 활성화된다.
+    작업자 스레드를보다 세밀하게 제어하려면 [`addprocs`](@ref)를 사용하여 `-t`/`--threads`를 `exeflags`를 통해 전달하라.
 
-## Data-race freedom
+## 데이터 레이스 예방
 
-You are entirely responsible for ensuring that your program is data-race free,
-and nothing promised here can be assumed if you do not observe that
-requirement. The observed results may be highly unintuitive.
+프로그렘에 데이터 레이스가 없도록 하는것은 당신의 책임이며,
+그 요구조건을 준수하지 않으면 여기서 약속된 어떤 것도 가정할 수 없다.
+관찰된 결과는 매우 직관적이지 않을 수 있다.
+
+이를 보장하는 가장 좋은 방법은, 여러 스레드에서 관찰할 수 있는 데이
 
 The best way to ensure this is to acquire a lock around any access to data that
 can be observed from multiple threads. For example, in most cases you should
